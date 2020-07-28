@@ -1,0 +1,36 @@
+{
+  "name": "forecast-surf-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "test": "NODE_ENV=test jest --verbose --runInBand",
+    "start:test": "NODE_ENV=test node index.js"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "author": "giovanni",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bcrypt": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "find-config": "^1.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "mongoose": "^5.9.20",
+    "mongoose-unique-validator": "^2.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.3.1",
+    "nodemon": "^2.0.4",
+    "jest": "^26.1.0",
+    "supertest": "^4.0.2"
+  }
+}
