@@ -71,9 +71,12 @@ describe('when there are surfspot saved', () => {
 
   test('a single spot is present and has forecast if the spot has coordinates', async () => {
     const surfSpot = await helper.surfSpotsInDb()
-    const response = await api.get(`/api/surfspots/${surfSpot[1].id}`)
+    const spotWithCoordinates = surfSpot.find(spot => spot.latitude !== 'unknown')
+    const response = await api.get(`/api/surfspots/${spotWithCoordinates.id}`)
     expect(response.body.id).toBeDefined()
     expect(response.body.forecast[0].data).toBeDefined()
+    expect(response.body.tides[0].height).toBeDefined()
+    expect(response.body.tile_url).toBeDefined()
     expect(response.body.name).toContain(surfSpot[1].name)
   })
 
@@ -81,8 +84,11 @@ describe('when there are surfspot saved', () => {
     const surfSpot = await helper.surfSpotsInDb()
     const spotNoCoordinates = surfSpot.find(spot => spot.latitude === 'unknown')
     const response = await api.get(`/api/surfspots/${spotNoCoordinates.id}`)
+    console.log(response)
     expect(response.body.id).toBeDefined()
     expect(response.body.forecast).toHaveLength(0)
+    expect(response.body.tides).toHaveLength(0)
+    expect(response.body.tile_url).not.toBeDefined()
     expect(response.body.name).toContain(surfSpot[0].name)
   })
 

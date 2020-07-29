@@ -4,7 +4,7 @@ const Country = require('../models/surfSpots/country')
 const Region = require('../models/surfSpots/region')
 const SurfSpot = require('../models/surfSpots/surfSpot')
 const surfRouter = require('express').Router()
-const forecast = require('../utils/forecast')
+const forecast = require('../utils/forecastTideFetch')
 
 surfRouter.get('/', async (req, res) => {
   const surfSpots = await Continent

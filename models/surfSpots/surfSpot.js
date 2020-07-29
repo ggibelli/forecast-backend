@@ -35,6 +35,9 @@ const spotSchema = new mongoose.Schema({
   longitude: String,
   forecast: [mongoose.Schema.Types.Mixed],
   forecast_last_request: Number,
+  tides: [mongoose.Schema.Types.Mixed],
+  tides_last_request: Number,
+  tile_url: String,
 })
 
 spotSchema.set('toJSON', {
