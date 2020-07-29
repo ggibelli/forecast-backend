@@ -33,6 +33,8 @@ const spotSchema = new mongoose.Schema({
   dangers: String,
   latitude: String,
   longitude: String,
+  forecast: [mongoose.Schema.Types.Mixed],
+  forecast_last_request: Number,
 })
 
 spotSchema.set('toJSON', {

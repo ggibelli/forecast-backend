@@ -63,7 +63,7 @@ surfRouter.get('/surfspots/:id', async (req, res) => {
   const spot = await SurfSpot
     .findById(req.params.id).populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 })
   if (!spot) throw new SurfSpotNotFoundError()
-  const weather = await forecast.fetchForecast(spot.latitude, spot.longitude)
+  spot.latitude !== 'unknown' && await forecast.fetchForecast(spot)
   res.json(spot)
 })
 
