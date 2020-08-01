@@ -34,7 +34,9 @@ const fetchForecast = async (spot) => {
       // return the avg data for each hour
       return { time: hour.time, data: newArray.filter(element => element !== false) }
     })
-    spot.forecast = arrayWaves
+
+    // Filter the array to show only 6 times of the day (es: 00.00, 04.00, 08.00, 12.00 etc)
+    spot.forecast = arrayWaves.slice(0, 121).filter((el, index) => index % 4 === 0)
   }
 
   // If the request is older than 5 days from the last one or if there is no tides data present I make a new request
