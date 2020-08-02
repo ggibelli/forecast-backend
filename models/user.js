@@ -5,19 +5,14 @@ require('mongoose-unique-validator')
 mongoose.set('useCreateIndex', true)
 
 const userSchema = new mongoose.Schema({
-  username: {
+  email: {
     type: String,
     unique: true,
     minlength: 3,
     required: true,
   },
-  email_address: {
-    type: String,
-    unique: true,
-    minlength: 3,
-    required: true,
-  },
-  name: String,
+  firstName: String,
+  lastName: String,
   passwordHash: String,
 })
 

@@ -7,14 +7,14 @@ const loginRouter = require('express').Router()
 
 loginRouter.post('/', async (req, res) => {
   const body = req.body
-  const user = await User.findOne({ username: body.username })
+  const user = await User.findOne({ email: body.email })
   const passwordCorrect = user === null
     ? false
     : await bcrypt.compare(body.password, user.passwordHash)
   if (!(user && passwordCorrect)) throw new AuthenticationError()
 
   const userForToken = {
-    username: user.username,
+    email: user.email,
     id: user._id
   }
 
@@ -22,7 +22,7 @@ loginRouter.post('/', async (req, res) => {
 
   res
     .status(200)
-    .send({ token, username: user.username, name: user.name, email_address: user.email_address })
+    .send({ token, firstName: user.firstName, lastName: user.lastName, email: user.email })
 })
 
 module.exports = loginRouter
