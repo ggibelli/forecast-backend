@@ -23,6 +23,12 @@ surfRouter.get('/', async (req, res) => {
   res.json(surfSpots)
 })
 
+surfRouter.get('/surfspots', async (req, res) => {
+  const spots = await SurfSpot
+    .find({}).select('name').populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 })
+  res.json(spots)
+})
+
 surfRouter.get('/continents/:id', async (req, res) => {
   const continents = await Continent
     .findById(req.params.id).populate({
