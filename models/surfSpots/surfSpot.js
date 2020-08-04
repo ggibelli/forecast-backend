@@ -23,6 +23,10 @@ const spotSchema = new mongoose.Schema({
     minlength: 2,
     required: true,
   },
+  forecast: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Forecast',
+  },
   type: String,
   direction: String,
   bottom: String,
@@ -33,10 +37,6 @@ const spotSchema = new mongoose.Schema({
   dangers: String,
   latitude: String,
   longitude: String,
-  forecast: [mongoose.Schema.Types.Mixed],
-  forecast_last_request: Number,
-  tides: [mongoose.Schema.Types.Mixed],
-  tides_last_request: Number,
   tile_url: String,
 })
 
@@ -45,8 +45,6 @@ spotSchema.set('toJSON', {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v
-    delete returnedObject.forecast_last_request
-    delete returnedObject.tides_last_request
   },
 })
 

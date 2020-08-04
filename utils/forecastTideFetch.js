@@ -1,5 +1,6 @@
 const axios =  require('axios')
 const config = require('./config')
+const Forecast = require('../models/forecast')
 
 const surfParams = [
   'secondarySwellDirection', 'secondarySwellHeight', 'secondarySwellPeriod',
@@ -12,10 +13,19 @@ const surfParams = [
 
 const reducer = (accumulator, currentValue) => accumulator + currentValue
 
+const createForecast = async (spot) => {
+  const forecast = new Forecast({ surfspot: spot })
+  await forecast.save()
+  spot.forecast = await Forecast.findOne({ surfspot: spot })
+  spot.tile_url = `https://api.maptiler.com/maps/062c0d04-1842-4a45-8181-c5bec3bf2214/static/${spot.longitude},${spot.latitude},13/260x195.png?key=3tFgnOQBQixe61aigsBT&attribution=0`
+  await spot.save()
+}
+
 const fetchForecast = async (spot) => {
+  const forecast = await Forecast.findOne({ surfspot: spot })
   const timeForecastRequest = Math.floor(Date.now() / 1000)
   // If the request if within 6 hours from the last one I provide the same forecast data
-  if ((timeForecastRequest - spot.forecast_last_request) > 21600 || !spot.forecast_last_request) {
+  if ((timeForecastRequest - forecast.forecast_last_request) > 21600 || !forecast.forecast_last_request) {
     const timeEndForecast = timeForecastRequest + 432000 // 5 days
     const forecastData = await axios.get(`https://api.stormglass.io/v2/weather/point?lat=${spot.latitude}&lng=${spot.longitude}&end=${timeEndForecast}&params=${surfParams}`, {
       headers: {
@@ -36,22 +46,21 @@ const fetchForecast = async (spot) => {
     })
 
     // Filter the array to show only 6 times of the day (es: 00.00, 04.00, 08.00, 12.00 etc)
-    spot.forecast = arrayWaves.slice(0, 121).filter((el, index) => index % 4 === 0)
+    forecast.forecast = arrayWaves.slice(0, 121).filter((el, index) => index % 4 === 0)
+    forecast.forecast_last_request = timeForecastRequest
   }
 
   // If the request is older than 5 days from the last one or if there is no tides data present I make a new request
-  if ((timeForecastRequest - spot.tides_last_request) > 432000 || !spot.tides_last_request) {
+  if ((timeForecastRequest - forecast.tides_last_request) > 432000 || !forecast.tides_last_request) {
     const tideData = await axios.get(`https://api.stormglass.io/v2/tide/extremes/point?lat=${spot.latitude}&lng=${spot.longitude}`, {
       headers: {
         'Authorization': config.STORMGLASS_API
       }
     })
-    spot.tides = tideData.data.data
-    spot.tides_last_request = timeForecastRequest
-    spot.tile_url = `https://api.maptiler.com/maps/062c0d04-1842-4a45-8181-c5bec3bf2214/static/${spot.longitude},${spot.latitude},13/260x195.png?key=3tFgnOQBQixe61aigsBT&attribution=0`
+    forecast.tides = tideData.data.data
+    forecast.tides_last_request = timeForecastRequest
   }
-  spot.forecast_last_request = timeForecastRequest
-  await spot.save()
+  await forecast.save()
 }
 
-module.exports = { fetchForecast }
+module.exports = { fetchForecast, createForecast }

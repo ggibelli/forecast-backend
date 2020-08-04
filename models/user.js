@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const mongooseUniqueValidator = require('mongoose-unique-validator')
-require('mongoose-unique-validator')
 
 mongoose.set('useCreateIndex', true)
 
