@@ -12,13 +12,14 @@ const Country = require('../models/surfSpots/country')
 const Region = require('../models/surfSpots/region')
 const SurfSpot = require('../models/surfSpots/surfSpot')
 const User = require('../models/user')
+const Forecast = require('../models/forecast')
 
 beforeEach(async () => {
   await Continent.deleteMany({})
   await Country.deleteMany({})
   await Region.deleteMany({})
   await SurfSpot.deleteMany({})
-
+  await Forecast.deleteMany({})
   const continent = new Continent({ name: 'Europe' })
   const country = new Country({ name: 'Portugal', continent })
   const region = new Region({ name: 'Algarve', country, continent })
@@ -28,7 +29,7 @@ beforeEach(async () => {
   const surfSpotsObjects = []
   surfObjects.map(spot => {
     const newSpot = new SurfSpot(spot)
-    region.surf_spots.push(newSpot)
+    region.surfSpots.push(newSpot)
     surfSpotsObjects.push(newSpot)
   })
   const promiseArray = surfSpotsObjects.map(spot => spot.save())
@@ -48,7 +49,7 @@ describe('when there are surfspot saved', () => {
 
   test('all the surfspots are present', async () => {
     const response = await api.get('/api/')
-    expect(response.body[0].countries[0].regions[0].surf_spots).toHaveLength(helper.initialSpots.length)
+    expect(response.body[0].countries[0].regions[0].surfSpots).toHaveLength(helper.initialSpots.length)
   })
 
   test('all the countries are present under the continent', async () => {
@@ -66,30 +67,30 @@ describe('when there are surfspot saved', () => {
   test('all the surf spots are present under the region', async () => {
     const regions = await helper.regionsInDb()
     const response = await api.get(`/api/regions/${regions[0].id}`)
-    expect(response.body.surf_spots).toHaveLength(3)
+    expect(response.body.surfSpots).toHaveLength(3)
   })
 
-  test('a single spot is present and has forecast if the spot has coordinates', async () => {
+  test('a single spot is present and has forecast ID if the spot has coordinates and has forecast', async () => {
     const surfSpot = await helper.surfSpotsInDb()
     const spotWithCoordinates = surfSpot.find(spot => spot.latitude !== 'unknown')
     const response = await api.get(`/api/surfspots/${spotWithCoordinates.id}`)
     expect(response.body.id).toBeDefined()
-    expect(response.body.forecast[0].data).toBeDefined()
-    expect(response.body.tides[0].height).toBeDefined()
+    expect(response.body.forecast.id).toBeDefined()
     expect(response.body.tile_url).toBeDefined()
-    expect(response.body.name).toContain(surfSpot[1].name)
-  })
+    expect(response.body.name).toContain(spotWithCoordinates.name)
+    const responseForecast = await api.get(`/api/forecast/${response.body.forecast.id}`)
+    expect(responseForecast.body.forecast).toBeDefined()
+    expect(responseForecast.body.tides).toBeDefined()
+  }, 10000)
 
   test('a single spot is present and has no forecast if the spot has no coordinates', async () => {
     const surfSpot = await helper.surfSpotsInDb()
     const spotNoCoordinates = surfSpot.find(spot => spot.latitude === 'unknown')
     const response = await api.get(`/api/surfspots/${spotNoCoordinates.id}`)
-    console.log(response)
     expect(response.body.id).toBeDefined()
-    expect(response.body.forecast).toHaveLength(0)
-    expect(response.body.tides).toHaveLength(0)
+    expect(response.body.forecast).not.toBeDefined()
     expect(response.body.tile_url).not.toBeDefined()
-    expect(response.body.name).toContain(surfSpot[0].name)
+    expect(response.body.name).toContain(spotNoCoordinates.name)
   })
 
   test('if the continent does not exist an appropriate error message is displayed', async () => {
@@ -133,7 +134,7 @@ describe('when there is initially one user in db', () => {
   beforeEach(async () => {
     await User.deleteMany({})
     const passwordHash = await bcrypt.hash('secret', 10)
-    const user = new User({ username: 'rootgiovanni', passwordHash, email_address: 'prova@ciao.it' })
+    const user = new User({ username: 'rootgiovanni', passwordHash, email: 'prova@ciao.it' })
     await user.save()
   })
 
@@ -141,9 +142,10 @@ describe('when there is initially one user in db', () => {
     const userAtStart = await helper.usersInDb()
     const newUser = {
       username: 'ggiova',
-      name: 'gio gibe',
+      email: 'provaprova@ciao.it',
+      firstName: 'giovanni',
+      lastName: 'gibelli',
       password: 'segreta',
-      email_address: 'gio@vanni.com'
     }
     await api
       .post('/api/users')
@@ -160,9 +162,10 @@ describe('when there is initially one user in db', () => {
     const userAtStart = await helper.usersInDb()
     const newUser = {
       username: 'rootgiovanni',
-      name: 'gio gibe',
+      email: 'provaprova@ciao.it',
+      firstName: 'giovanni',
+      lastName: 'gibelli',
       password: 'cazzimiei',
-      email_address: 'gio@vanni.com'
     }
     const res = await api
       .post('/api/users')
@@ -174,20 +177,59 @@ describe('when there is initially one user in db', () => {
     expect(usersAtEnd).toHaveLength(userAtStart.length)
   })
 
-  test('creation fails with proper statuscode and message if username too short', async () => {
+  test('creation fails with proper statuscode and message if email exists already', async () => {
     const userAtStart = await helper.usersInDb()
     const newUser = {
-      username: 'gi',
-      name: 'gio gibe',
-      password: 'secret',
-      email_address: 'gio@vanni.com'
+      username: '123giovanni',
+      email: 'prova@ciao.it',
+      firstName: 'giovanni',
+      lastName: 'gibelli',
+      password: 'cazzimiei',
     }
     const res = await api
       .post('/api/users')
       .send(newUser)
       .expect(400)
       .expect('Content-Type', /application\/json/)
-    expect(res.body.error).toContain('User validation failed')
+    expect(res.body.error).toContain('`email` to be unique')
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(userAtStart.length)
+  })
+
+  test('creation fails with proper statuscode and message if username too short', async () => {
+    const userAtStart = await helper.usersInDb()
+    const newUser = {
+      username: 'gi',
+      email: 'provaprova@ciao.it',
+      firstName: 'giovanni',
+      lastName: 'gibelli',
+      password: 'secret',
+    }
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+    expect(res.body.error).toContain('Username not valid.')
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(userAtStart.length)
+  })
+
+  test('creation fails with proper statuscode and message if email not valid', async () => {
+    const userAtStart = await helper.usersInDb()
+    const newUser = {
+      username: 'giovann',
+      email: 'provaprova.ciao.it',
+      firstName: 'giovanni',
+      lastName: 'gibelli',
+      password: 'secret',
+    }
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+    expect(res.body.error).toContain('Email address not valid.')
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toHaveLength(userAtStart.length)
   })
@@ -196,9 +238,10 @@ describe('when there is initially one user in db', () => {
     const userAtStart = await helper.usersInDb()
     const newUser = {
       username: 'giovanni',
-      name: 'gio gibe',
+      email: 'provaprova@ciao.it',
+      firstName: 'giovanni',
+      lastName: 'gibelli',
       password: 'gi',
-      email_address: 'gio@vanni.com'
     }
     const res = await api
       .post('/api/users')
@@ -213,7 +256,7 @@ describe('when there is initially one user in db', () => {
   test('login successfull with right credentials', async () => {
     const res = await api
       .post('/api/login')
-      .send({ username: 'rootgiovanni', password: 'secret' })
+      .send({ email: 'prova@ciao.it', password: 'secret' })
       .expect(200)
     expect(res.body.token).toBeDefined()
   })
@@ -221,7 +264,7 @@ describe('when there is initially one user in db', () => {
   test('login fails with wrong credentials', async () => {
     const res = await api
       .post('/api/login')
-      .send({ username: 'rootgiovanni', password: 'wrong' })
+      .send({ email: 'prova@ciao.it', password: 'wrong' })
       .expect(400)
     expect(res.body.error).toContain('Combination user/password incorrect.')
   })

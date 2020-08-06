@@ -4,8 +4,7 @@ const Country = require('../models/surfSpots/country')
 const Region = require('../models/surfSpots/region')
 const SurfSpot = require('../models/surfSpots/surfSpot')
 const surfRouter = require('express').Router()
-const forecast = require('../utils/forecastTideFetch')
-const Forecast = require('../models/forecast')
+const forecastHelper = require('../utils/forecastTideFetch')
 
 surfRouter.get('/', async (req, res) => {
   const surfSpots = await Continent
@@ -16,7 +15,7 @@ surfRouter.get('/', async (req, res) => {
         path: 'regions',
         select: 'name',
         populate: {
-          path: 'surf_spots',
+          path: 'surfSpots',
           select: 'name',
         },
       },
@@ -70,15 +69,9 @@ surfRouter.get('/surfspots/:id', async (req, res) => {
   const spot = await SurfSpot
     .findById(req.params.id).populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 }).populate('forecast', { id: 1 })
   if (!spot) throw new SurfSpotNotFoundError()
-  spot.latitude !== 'unknown' && !spot.forecast && await forecast.createForecast(spot)
-  spot.forecast && forecast.fetchForecast(spot)
+  spot.latitude !== 'unknown' && !spot.forecast && await forecastHelper.createForecast(spot)
+  //spot.forecast && forecastHelper.fetchForecast(spot)
   res.json(spot)
-})
-
-surfRouter.get('/forecast/:id', async (req, res) => {
-  const forecast = await Forecast
-    .findById(req.params.id).populate('surfspot', { name: 1 })
-  res.json(forecast)
 })
 
 module.exports = surfRouter

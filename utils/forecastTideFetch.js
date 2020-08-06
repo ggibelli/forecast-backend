@@ -21,11 +21,11 @@ const createForecast = async (spot) => {
   await spot.save()
 }
 
-const fetchForecast = async (spot) => {
-  const forecast = await Forecast.findOne({ surfspot: spot })
+const fetchForecast = async (spot, forecastPassed) => {
+  const forecast = !forecastPassed ? await Forecast.findOne({ surfspot: spot }) : forecastPassed
   const timeForecastRequest = Math.floor(Date.now() / 1000)
   // If the request if within 6 hours from the last one I provide the same forecast data
-  if ((timeForecastRequest - forecast.forecast_last_request) > 21600 || !forecast.forecast_last_request) {
+  if ((timeForecastRequest - forecast.forecastLastRequest) > 21600 || !forecast.forecastLastRequest) {
     const timeEndForecast = timeForecastRequest + 432000 // 5 days
     const forecastData = await axios.get(`https://api.stormglass.io/v2/weather/point?lat=${spot.latitude}&lng=${spot.longitude}&end=${timeEndForecast}&params=${surfParams}`, {
       headers: {
@@ -47,18 +47,19 @@ const fetchForecast = async (spot) => {
 
     // Filter the array to show only 6 times of the day (es: 00.00, 04.00, 08.00, 12.00 etc)
     forecast.forecast = arrayWaves.slice(0, 121).filter((el, index) => index % 4 === 0)
-    forecast.forecast_last_request = timeForecastRequest
+    forecast.forecastLastRequest = timeForecastRequest
+    console.log(forecast.forecastLastRequest)
   }
 
   // If the request is older than 5 days from the last one or if there is no tides data present I make a new request
-  if ((timeForecastRequest - forecast.tides_last_request) > 432000 || !forecast.tides_last_request) {
+  if ((timeForecastRequest - forecast.tidesLastRequest) > 432000 || !forecast.tidesLastRequest) {
     const tideData = await axios.get(`https://api.stormglass.io/v2/tide/extremes/point?lat=${spot.latitude}&lng=${spot.longitude}`, {
       headers: {
         'Authorization': config.STORMGLASS_API
       }
     })
     forecast.tides = tideData.data.data
-    forecast.tides_last_request = timeForecastRequest
+    forecast.tidesLastRequest = timeForecastRequest
   }
   await forecast.save()
 }

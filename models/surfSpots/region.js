@@ -20,7 +20,7 @@ const regionSchema = new mongoose.Schema({
     minlength: 3,
     required: true,
   },
-  surf_spots: [
+  surfSpots: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'SurfSpot',

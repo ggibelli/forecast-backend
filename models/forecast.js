@@ -11,9 +11,9 @@ const forecastSchema = new mongoose.Schema({
     unique: true,
   },
   forecast: [mongoose.Schema.Types.Mixed],
-  forecast_last_request: Number,
+  forecastLastRequest: Number,
   tides: [mongoose.Schema.Types.Mixed],
-  tides_last_request: Number,
+  tidesLastRequest: Number,
 })
 
 forecastSchema.set('toJSON', {
@@ -21,8 +21,8 @@ forecastSchema.set('toJSON', {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v
-    delete returnedObject.forecast_last_request
-    delete returnedObject.tides_last_request
+    delete returnedObject.forecastLastRequest
+    delete returnedObject.tidesLastRequest
   },
 })
 

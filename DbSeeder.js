@@ -1,5 +1,5 @@
 const fs = require('fs').promises
-const logger = require('./util/logger')
+const logger = require('./utils/logger')
 const Continent = require('./models/surfSpots/continent')
 const Country = require('./models/surfSpots/country')
 const Region = require('./models/surfSpots/region')
@@ -68,7 +68,7 @@ const createSpot = async (spot, continent, country, region) => {
     longitude: spot.longitude,
   }
   const newSpot = new SurfSpot(surfSpot)
-  region.surf_spots.push(newSpot)
+  region.surfSpots.push(newSpot)
   try {
     await region.save()
     await newSpot.save()
