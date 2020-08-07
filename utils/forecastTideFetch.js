@@ -8,7 +8,7 @@ const surfParams = [
   'swellDirection', 'swellHeight', 'swellPeriod',
   'waveDirection', 'waveHeight', 'wavePeriod',
   'windDirection', 'windSpeed', 'gust',
-  'waterTemperature',
+  'waterTemperature', 'airTemperature', 'cloudCover', 'precipitation'
 ].join(',')
 
 const reducer = (accumulator, currentValue) => accumulator + currentValue
