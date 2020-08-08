@@ -10,7 +10,7 @@ surfRouter.get('/', async (req, res) => {
   const surfSpots = await Continent
     .find({}).populate({
       path: 'countries',
-      select: 'name',
+      select: ['name', 'latitude', 'longitude'],
       populate: {
         path: 'regions',
         select: 'name',

@@ -26,6 +26,8 @@ const regionSchema = new mongoose.Schema({
       ref: 'SurfSpot',
     },
   ],
+  latitude: String,
+  longitude: String,
 })
 
 regionSchema.set('toJSON', {
