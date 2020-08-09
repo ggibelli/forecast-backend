@@ -39,7 +39,7 @@ surfRouter.get('/continents/:id', async (req, res) => {
         select: 'name',
         populate: {
           path: 'surfSpots',
-          select: 'name',
+          select: ['name', 'latitude', 'longitude'],
         },
       },
     })
@@ -52,7 +52,7 @@ surfRouter.get('/countries/:id', async (req, res) => {
     .findById(req.params.id).populate({
       path: 'regions',
       select: 'name',
-      populate: { path: 'surfSpots', select: 'name' },
+      populate: { path: 'surfSpots', select: ['name', 'latitude', 'longitude'] },
     }).populate('continent', { name: 1 }).populate('country', { name: 1 })
   if (!countries) throw new SurfSpotNotFoundError('Country not found')
   res.json(countries)
@@ -60,7 +60,8 @@ surfRouter.get('/countries/:id', async (req, res) => {
 
 surfRouter.get('/regions/:id', async (req, res) => {
   const regions = await Region
-    .findById(req.params.id).populate('surfSpots', { name: 1 })
+    .findById(req.params.id).populate('surfSpots', { name: 1, latitude: 1, longitude: 1 })
+    .populate('continent', { name: 1 }).populate('country', { name: 1 })
   if (!regions) throw new SurfSpotNotFoundError('Region not found')
   res.json(regions)
 })
