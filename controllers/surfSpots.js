@@ -23,7 +23,7 @@ surfRouter.get('/', async (req, res) => {
     })
   const ipClient = get_ip(req).clientIp
   const response = surfSpots.concat({ ip: ipClient })
-  res.json(response)
+  res.json(surfSpots)
 })
 
 surfRouter.get('/surfspots', async (req, res) => {
