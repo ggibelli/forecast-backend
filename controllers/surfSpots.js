@@ -5,6 +5,7 @@ const Region = require('../models/surfSpots/region')
 const SurfSpot = require('../models/surfSpots/surfSpot')
 const surfRouter = require('express').Router()
 const forecastHelper = require('../utils/forecastTideFetch')
+const get_ip = require('ipware')().get_ip
 
 surfRouter.get('/', async (req, res) => {
   const surfSpots = await Continent
@@ -20,7 +21,9 @@ surfRouter.get('/', async (req, res) => {
         },
       },
     })
-  res.json(surfSpots)
+  const ipClient = get_ip(req).clientIp
+  const response = surfSpots.concat({ ip: ipClient })
+  res.json(response)
 })
 
 surfRouter.get('/surfspots', async (req, res) => {
@@ -71,7 +74,6 @@ surfRouter.get('/surfspots/:id', async (req, res) => {
     .findById(req.params.id).populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 }).populate('forecast', { id: 1 })
   if (!spot) throw new SurfSpotNotFoundError()
   spot.latitude !== 'unknown' && !spot.forecast && await forecastHelper.createForecast(spot)
-  //spot.forecast && forecastHelper.fetchForecast(spot)
   res.json(spot)
 })
 
