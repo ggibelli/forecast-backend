@@ -17,7 +17,7 @@ const createForecast = async (spot) => {
   const forecast = new Forecast({ surfspot: spot })
   await forecast.save()
   spot.forecast = await Forecast.findOne({ surfspot: spot })
-  spot.tile_url = `https://api.maptiler.com/maps/062c0d04-1842-4a45-8181-c5bec3bf2214/static/${spot.longitude},${spot.latitude},13/260x195.png?key=3tFgnOQBQixe61aigsBT&attribution=0`
+  spot.tile_url = `https://api.maptiler.com/maps/062c0d04-1842-4a45-8181-c5bec3bf2214/static/${spot.longitude},${spot.latitude},12/260x260.png?key=3tFgnOQBQixe61aigsBT&attribution=0`
   await spot.save()
 }
 
@@ -48,7 +48,6 @@ const fetchForecast = async (spot, forecastPassed) => {
     // Filter the array to show only 6 times of the day (es: 00.00, 04.00, 08.00, 12.00 etc)
     forecast.forecast = arrayWaves.slice(0, 121).filter((el, index) => index % 4 === 0)
     forecast.forecastLastRequest = timeForecastRequest
-    console.log(forecast.forecastLastRequest)
   }
 
   // If the request is older than 5 days from the last one or if there is no tides data present I make a new request

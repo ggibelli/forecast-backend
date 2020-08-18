@@ -14,7 +14,7 @@ surfRouter.get('/', async (req, res) => {
       select: ['name', 'latitude', 'longitude'],
       populate: {
         path: 'regions',
-        select: 'name',
+        select: ['name', 'latitude', 'longitude'],
         populate: {
           path: 'surfSpots',
           select: 'name',
