@@ -39,6 +39,8 @@ const errorHandler = (error, req, res, next) => {
     return res.status(error.status).send({ error: error.message })
   } else if (error.name === 'VersionError') {
     return res.status(error.status).send({ error: error.message })
+  } else if (error.name === 'InvalidApiRequest') {
+    return res.status(error.status).send({ error: error.message })
   }
   next(error)
 }

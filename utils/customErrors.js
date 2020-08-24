@@ -49,6 +49,12 @@ class InvalidPasswordError extends ApplicationError {
   }
 }
 
+class InvalidApiRequest extends ApplicationError {
+  constructor(message) {
+    super(message || 'Invalid API request.', 400)
+  }
+}
+
 module.exports = {
   ApplicationError,
   UserNotFoundError,
@@ -57,4 +63,5 @@ module.exports = {
   InvalidEmailError,
   InvalidUsernameError,
   InvalidPasswordError,
+  InvalidApiRequest
 }
