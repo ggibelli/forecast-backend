@@ -35,7 +35,6 @@ const fetchForecast = async (spot, forecastPassed) => {
           'Authorization': config.STORMGLASS_API
         }
       })
-      console.log(forecastData)
       const arrayWaves = forecastData.data.hours.map(hour => {
         // First convert the objects to array
         const objects = Object.entries(hour)

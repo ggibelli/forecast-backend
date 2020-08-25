@@ -1,0 +1,8 @@
+PUT http://localhost:3003/api/users/5f26033762e3d322133d357a/starred
+content-type: application/json
+
+{
+    "username": "giovanni",
+    "email": "gorge91@gmail.com",
+    "id": "5f38d71b8e716809385f16ba"
+}

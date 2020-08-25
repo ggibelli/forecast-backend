@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
   passwordHash: String,
+  starredSpots : [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SurfSpot',
+    },
+  ],
 })
 
 userSchema.set('toJSON', {
