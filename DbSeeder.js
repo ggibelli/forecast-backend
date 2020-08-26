@@ -78,14 +78,29 @@ const createSpot = async (spot, continent, country, region) => {
 }
 
 const createSurfSpot = async (spot) => {
-  const continent = await createContinent(spot.continent)
-  const country = await createCountry(spot.country, continent)
-  const region = await createRegion(spot.region, continent, country)
-  await createSpot(spot, continent, country, region)
+  let continent
+  let country
+  let region
+  try {
+    continent = await createContinent(spot.continent)
+  } catch(e) {
+    continent = await Continent.findOne({ name: spot.continent })
+  }
+  try {
+    country = await createCountry(spot.country, continent)
+  } catch(e) {
+    country = await Country.findOne({ name: spot.country })
+  }
+  try {
+    region = await createRegion(spot.region, continent, country)
+  } catch(e) {
+    region = await Region.findOne({ name: spot.region })
+  }
+  if (continent && country && region) await createSpot(spot, continent, country, region)
 }
 
 const seedDatabaseLocations = async () => {
-  const rawData = await fs.readFile('./cleanSpotsPt.json')
+  const rawData = await fs.readFile('./cleanSpotsNz.json')
   const surfSpots = JSON.parse(rawData)
   surfSpots.map((surfspot) => createSurfSpot(surfspot))
 }

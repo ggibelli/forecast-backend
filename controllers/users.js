@@ -33,9 +33,22 @@ usersRouter.post('/', async (req, res) => {
   res.json(savedUser)
 })
 
-usersRouter.put('/:id/starred', async (req, res) => {
+usersRouter.get('/:id', async (req, res) => {
+  const user = await User
+    .findById(req.params.id).populate('starredSpots', { name: 1 })
+  res.json(user)
+})
+
+usersRouter.put('/:id/starred/add', async (req, res) => {
   const { id } = req.body
   const updatedUser = await User.findByIdAndUpdate(req.params.id, { $addToSet: { starredSpots: id } },
+    { new: true }).populate('starredSpots', { name: 1 })
+  res.json(updatedUser)
+})
+
+usersRouter.put('/:id/starred/remove', async (req, res) => {
+  const { id } = req.body
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, { $pull: { starredSpots: id } },
     { new: true }).populate('starredSpots', { name: 1 })
   res.json(updatedUser)
 })

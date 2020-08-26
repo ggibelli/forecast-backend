@@ -55,6 +55,12 @@ class InvalidApiRequest extends ApplicationError {
   }
 }
 
+class InvalidToken extends ApplicationError {
+  constructor(message) {
+    super(message || 'Token missing or invalid', 401)
+  }
+}
+
 module.exports = {
   ApplicationError,
   UserNotFoundError,
@@ -63,5 +69,6 @@ module.exports = {
   InvalidEmailError,
   InvalidUsernameError,
   InvalidPasswordError,
-  InvalidApiRequest
+  InvalidApiRequest,
+  InvalidToken
 }

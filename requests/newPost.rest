@@ -1,0 +1,13 @@
+POST http://localhost:3003/api/surfspots
+content-type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdvcmdlOTFAZ21haWwuY29tIiwiaWQiOiI1ZjI2MDMzNzYyZTNkMzIyMTMzZDM1N2EiLCJpYXQiOjE1OTg0Mjk4NTF9.LU9sFAN1iqEIljAqFMsH7XLnXT_UpuR-X0yc87YTGNE
+
+{
+    "continent": "5f33a616a61a020af8e0cc04",
+    "country": "5f33a619a61a020af8e0cc8d",
+    "region": "5f33a61ea61a020af8e0cd19",
+    "name": "privato",
+    "latitude": "101.00",
+    "longitude": "-201.00",
+    "isSecret": true
+}

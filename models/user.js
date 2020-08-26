@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema({
       ref: 'SurfSpot',
     },
   ],
+  createdSpots: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SurfSpot',
+    },
+  ]
 })
 
 userSchema.set('toJSON', {

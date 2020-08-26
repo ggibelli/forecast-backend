@@ -16,8 +16,8 @@ const continentSchema = new mongoose.Schema({
       ref: 'Country',
     },
   ],
-  latitude: String,
-  longitude: String,
+  latitude: { type: String, required: true },
+  longitude: { type: String, required: true },
 })
 
 continentSchema.set('toJSON', {

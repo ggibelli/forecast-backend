@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const mongooseUniqueValidator = require('mongoose-unique-validator')
 
 mongoose.set('useCreateIndex', true)
 
@@ -35,10 +36,17 @@ const spotSchema = new mongoose.Schema({
   best_tide_position: String,
   best_tide_movement: String,
   dangers: String,
-  latitude: String,
-  longitude: String,
+  latitude: { type: String, required: true },
+  longitude: { type: String, required: true },
   tile_url: String,
+  isSecret: { type: Boolean, default: false },
+  user : {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
 })
+
+spotSchema.index({ 'latitude': 1, 'longitude': 1 }, { 'unique': true })
 
 spotSchema.set('toJSON', {
   transform: (document, returnedObject) => {
@@ -48,6 +56,7 @@ spotSchema.set('toJSON', {
   },
 })
 
+spotSchema.plugin(mongooseUniqueValidator)
 const SurfSpot = mongoose.model('SurfSpot', spotSchema)
 
 module.exports = SurfSpot

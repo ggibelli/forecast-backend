@@ -21,8 +21,8 @@ const countrySchema = new mongoose.Schema({
       ref: 'Region',
     },
   ],
-  latitude: String,
-  longitude: String,
+  latitude: { type: String, required: true },
+  longitude: { type: String, required: true },
 })
 
 countrySchema.set('toJSON', {
