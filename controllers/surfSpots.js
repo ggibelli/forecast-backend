@@ -1,4 +1,10 @@
-const { SurfSpotNotFoundError, InvalidToken } = require('../utils/customErrors')
+const {
+  SurfSpotNotFoundError,
+  InvalidToken,
+  InvalidLatitude,
+  InvalidLongitude,
+  AuthenticationError,
+} = require('../utils/customErrors')
 const Continent = require('../models/surfSpots/continent')
 const Country = require('../models/surfSpots/country')
 const Region = require('../models/surfSpots/region')
@@ -9,6 +15,14 @@ const forecastHelper = require('../utils/forecastTideFetch')
 const get_ip = require('ipware')().get_ip
 const config = require('../utils/config')
 const jwt = require('jsonwebtoken')
+
+const latitudeIsValid = (latitude) => {
+  return /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/.test(latitude)
+}
+
+const longitudeIsValid = (longitude) => {
+  return /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/.test(longitude)
+}
 
 surfRouter.get('/', async (req, res) => {
   const surfSpots = await Continent
@@ -92,14 +106,39 @@ surfRouter.post('/surfspots/', async (req, res) => {
   region.surfSpots = region.surfSpots.concat(spot)
   const decodedToken = jwt.verify(req.token, config .SECRET)
   if (!req.token || !decodedToken.id) throw new InvalidToken()
+  if (!latitudeIsValid(req.body.latitude)) throw new InvalidLatitude()
+  if (!longitudeIsValid(req.body.longitude)) throw new InvalidLongitude()
   const user = await User.findById(decodedToken.id)
   spot.user = user
   const savedSpot = await spot.save()
   await region.save()
   user.createdSpots = user.createdSpots.concat(savedSpot._id)
+  await user.save()
   res.json(savedSpot)
 })
 
-// aggiungo rimuovi spot aggiunti da utente, e visualizzazione spot privati
+surfRouter.put('/surfspots/:id', async (req, res) => {
+  const spot = req.body
+  const decodedToken = jwt.verify(req.token, config .SECRET)
+  if (!req.token || !decodedToken.id) throw new InvalidToken()
+  if (!latitudeIsValid(req.body.latitude)) throw new InvalidLatitude()
+  if (!longitudeIsValid(req.body.longitude)) throw new InvalidLongitude()
+  const user = await User.findById(decodedToken.id)
+  if (spot.user !== user.id.toString()) throw new AuthenticationError('Only surfspot creator can modify it')
+  const updatedSpot = await SurfSpot.findByIdAndUpdate(req.params.id, spot, { new: true })
+  res.json(updatedSpot)
+})
+
+surfRouter.delete('/surfspots/:id', async (req, res) => {
+  const spot = await SurfSpot.findById(req.params.id)
+  const decodedToken = jwt.verify(req.token, config .SECRET)
+  if (!req.token || !decodedToken.id) throw new InvalidToken()
+  const user = await User.findById(decodedToken.id)
+  if (spot.user.toString() !== user.id.toString()) throw new AuthenticationError('Only surfspot creator can delete it')
+  await spot.remove()
+  user.createdSpots = user.createdSpots.filter(spot => spot.id.toString() !== req.params.id.toString())
+  await user.save()
+  res.status(204).end()
+})
 
 module.exports = surfRouter

@@ -61,6 +61,18 @@ class InvalidToken extends ApplicationError {
   }
 }
 
+class InvalidLatitude extends ApplicationError {
+  constructor(message) {
+    super(message || 'Invalid value, latitudes range from -90 to 90', 400)
+  }
+}
+
+class InvalidLongitude extends ApplicationError {
+  constructor(message) {
+    super(message || 'Invalid value, latitudes range from -180 to 180', 400)
+  }
+}
+
 module.exports = {
   ApplicationError,
   UserNotFoundError,
@@ -70,5 +82,7 @@ module.exports = {
   InvalidUsernameError,
   InvalidPasswordError,
   InvalidApiRequest,
-  InvalidToken
+  InvalidToken,
+  InvalidLatitude,
+  InvalidLongitude,
 }

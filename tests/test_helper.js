@@ -66,7 +66,7 @@ const continentsInDb = async () => {
 }
 
 const nonExistingId = async () => {
-  const continent = new Continent({ name: 'ti cancello' })
+  const continent = new Continent({ name: 'ti cancello', latitude: '10.00', longitude: '11.00' })
   await continent.save()
   await continent.remove()
 

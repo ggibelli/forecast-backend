@@ -41,6 +41,10 @@ const errorHandler = (error, req, res, next) => {
     return res.status(error.status).send({ error: error.message })
   } else if (error.name === 'InvalidApiRequest') {
     return res.status(error.status).send({ error: error.message })
+  } else if (error.name === 'InvalidLatitude') {
+    return res.status(error.status).send({ error: error.message })
+  } else if (error.name === 'InvalidLongitude') {
+    return res.status(error.status).send({ error: error.message })
   }
   next(error)
 }

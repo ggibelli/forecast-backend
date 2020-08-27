@@ -25,6 +25,8 @@ const countrySchema = new mongoose.Schema({
   longitude: { type: String, required: true },
 })
 
+countrySchema.index({ 'latitude': 1, 'longitude': 1 }, { 'unique': true })
+
 countrySchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()

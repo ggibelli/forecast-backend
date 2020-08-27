@@ -20,6 +20,8 @@ const continentSchema = new mongoose.Schema({
   longitude: { type: String, required: true },
 })
 
+continentSchema.index({ 'latitude': 1, 'longitude': 1 }, { 'unique': true })
+
 continentSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()

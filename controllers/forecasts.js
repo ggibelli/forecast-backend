@@ -8,7 +8,6 @@ forecastRouter.get('/:id', async (req, res) => {
   const timeForecastRequest = Math.floor(Date.now() / 1000)
   const forecast = await Forecast
     .findById(req.params.id).populate('surfspot', { name: 1 })
-  console.log(timeForecastRequest, forecast.forecastLastRequest)
   if (forecast.forecast.length === 0 || (timeForecastRequest - forecast.forecastLastRequest) > 21600) {
     const spot = await SurfSpot.findById(forecast.surfspot.id)
     await forecastHelper.fetchForecast(spot, forecast)

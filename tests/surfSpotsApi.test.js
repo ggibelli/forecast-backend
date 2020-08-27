@@ -20,9 +20,9 @@ beforeEach(async () => {
   await Region.deleteMany({})
   await SurfSpot.deleteMany({})
   await Forecast.deleteMany({})
-  const continent = new Continent({ name: 'Europe' })
-  const country = new Country({ name: 'Portugal', continent })
-  const region = new Region({ name: 'Algarve', country, continent })
+  const continent = new Continent({ name: 'Europe', latitude: '50.00', longitude: '-50.00' })
+  const country = new Country({ name: 'Portugal', continent, latitude: '20.00', longitude: '30.00' })
+  const region = new Region({ name: 'Algarve', country, continent, latitude: '12.00', longitude: '-45.00' })
   continent.countries.push(country)
   country.regions.push(region)
   const surfObjects = helper.initialSpots.map((spot) => ({ ...spot, continent, country, region }))
@@ -70,7 +70,7 @@ describe('when there are surfspot saved', () => {
     expect(response.body.surfSpots).toHaveLength(3)
   })
 
-  test('a single spot is present and has forecast ID if the spot has coordinates and has forecast', async () => {
+  test('a single spot is present and has forecast ID', async () => {
     const surfSpot = await helper.surfSpotsInDb()
     const spotWithCoordinates = surfSpot.find(spot => spot.latitude !== 'unknown')
     const response = await api.get(`/api/surfspots/${spotWithCoordinates.id}`)
@@ -82,16 +82,6 @@ describe('when there are surfspot saved', () => {
     expect(responseForecast.body.forecast).toBeDefined()
     expect(responseForecast.body.tides).toBeDefined()
   }, 10000)
-
-  test('a single spot is present and has no forecast if the spot has no coordinates', async () => {
-    const surfSpot = await helper.surfSpotsInDb()
-    const spotNoCoordinates = surfSpot.find(spot => spot.latitude === 'unknown')
-    const response = await api.get(`/api/surfspots/${spotNoCoordinates.id}`)
-    expect(response.body.id).toBeDefined()
-    expect(response.body.forecast).not.toBeDefined()
-    expect(response.body.tile_url).not.toBeDefined()
-    expect(response.body.name).toContain(spotNoCoordinates.name)
-  })
 
   test('if the continent does not exist an appropriate error message is displayed', async () => {
     const id = await helper.nonExistingId()
@@ -127,6 +117,83 @@ describe('when there are surfspot saved', () => {
       .expect(404)
       .expect('Content-Type', /application\/json/)
     expect(response.body.error).toContain('No Spot found.')
+  })
+
+  test('only the surfspots that are not secret are shown', async () => {
+    //todo
+  })
+
+  test('if a surfspot is secret is not shown', async () => {
+    //todo
+
+  })
+})
+describe('when creating a surfspot', () => {
+
+
+  test('a surfspot must have coordinates', async () => {
+    //todo
+
+  })
+
+  test('wheif a surfspot does not have coordinates an appropriate error is shown', async () => {
+    //todo
+
+  })
+
+  test('the latitude must be in the valid range', () => {
+    //todo
+
+  })
+
+  test('the longitude must be in the valid range', () => {
+    //todo
+
+  })
+
+  test('if the latitude is out of the valid range an appropriate error is shown', () => {
+    //todo
+
+  })
+
+  test('if the longitude is out of the valid range an appropriate error is shown', () => {
+    //todo
+
+  })
+
+  test('the surfspots is for default public', () => {
+    //todo
+
+  })
+
+  test('only verified user with token can create one', () => {
+    //todo
+
+  })
+
+  test('if user has no token an appropriate error is shown', () => {
+    //todo
+
+  })
+
+  test('the surfspot can be modified by its own creator', () => {
+    //todo
+
+  })
+
+  test('if an user tries to modify another user surfspot an error is shown', () => {
+    //todo
+
+  })
+
+  test('the surfspot can be deleted by its own creator', () => {
+    //todo
+
+  })
+
+  test('if an user tries to delete another user surfspot an error is shown', () => {
+    //todo
+
   })
 })
 
@@ -267,6 +334,18 @@ describe('when there is initially one user in db', () => {
       .send({ email: 'prova@ciao.it', password: 'wrong' })
       .expect(400)
     expect(res.body.error).toContain('Combination user/password incorrect.')
+  })
+
+  test('a surfspot can be starred', async () => {
+    //todo
+  })
+
+  test('a surfspot can be unstarred', async () => {
+    //todo
+  })
+
+  test('the info and the surfspots starred and created are shown', async () => {
+    //todo
   })
 })
 
