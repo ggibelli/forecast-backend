@@ -120,59 +120,228 @@ describe('when there are surfspot saved', () => {
   })
 
   test('only the surfspots that are not secret are shown', async () => {
-    //todo
+    const response = await api
+      .get('/api/surfspots')
+      .expect(200)
+    const surfspots = response.body.map(spot => spot.name)
+    expect(surfspots).toContain('praia do farol - lado poente')
+    expect(surfspots).toContain('Praia do Telheiro')
+    expect(surfspots).toContain('PRAIA NOVA')
+
   })
 
   test('if a surfspot is secret is not shown', async () => {
-    //todo
+    const response = await api
+      .get('/api/surfspots')
+      .expect(200)
+    const surfspots = response.body.map(spot => spot.name)
+    expect(surfspots).toContain('praia do farol - lado poente')
+    expect(surfspots).not.toContain('Secret Beach')
 
   })
 })
 describe('when creating a surfspot', () => {
 
-
-  test('a surfspot must have coordinates', async () => {
-    //todo
-
-  })
-
   test('wheif a surfspot does not have coordinates an appropriate error is shown', async () => {
-    //todo
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const continent = await Continent.find({})
+    const country = await Country.find({})
+    const region = await Region.find({})
+    const newSpot = {
+      continent: continent[0].id,
+      country: country[0].id,
+      region: region[0].id,
+      name: 'cool beach',
+      user: user
+    }
+
+    const res = await api
+      .post('/api/surfspots')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newSpot)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
+    expect(res.body.error).toContain('Invalid value, latitudes range from -90 to 90')
 
   })
 
-  test('the latitude must be in the valid range', () => {
-    //todo
+  test('the latitude must be in the valid range or error is shown', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const continent = await Continent.find({})
+    const country = await Country.find({})
+    const region = await Region.find({})
+    const newSpot = {
+      continent: continent[0].id,
+      country: country[0].id,
+      region: region[0].id,
+      latitude: '101010',
+      name: 'cool beach',
+      user: user
+    }
+
+    const res = await api
+      .post('/api/surfspots')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newSpot)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
+    expect(res.body.error).toContain('Invalid value, latitudes range from -90 to 90')
 
   })
 
-  test('the longitude must be in the valid range', () => {
-    //todo
+  test('the longitude must be in the valid range or error is shown', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const continent = await Continent.find({})
+    const country = await Country.find({})
+    const region = await Region.find({})
+    const newSpot = {
+      continent: continent[0].id,
+      country: country[0].id,
+      region: region[0].id,
+      latitude: '76.1234',
+      longitude: '1234',
+      name: 'cool beach',
+      user: user
+    }
 
+    const res = await api
+      .post('/api/surfspots')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newSpot)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
+    expect(res.body.error).toContain('Invalid value, longitudes range from -180 to 180')
   })
 
-  test('if the latitude is out of the valid range an appropriate error is shown', () => {
-    //todo
+  test('the surfspots is for default public', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const continent = await Continent.find({})
+    const country = await Country.find({})
+    const region = await Region.find({})
+    const newSpot = {
+      continent: continent[0].id,
+      country: country[0].id,
+      region: region[0].id,
+      name: 'cool beach',
+      latitude: '67.00',
+      longitude: '-52.00',
+      user: user
+    }
 
+    await api
+      .post('/api/surfspots')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newSpot)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
+
+    const beach = spotsAtEnd.filter(b => b.name === 'cool beach')
+    expect(beach[0].isSecret).toBe(false)
   })
 
-  test('if the longitude is out of the valid range an appropriate error is shown', () => {
-    //todo
+  test('only verified user with token can create one', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const continent = await Continent.find({})
+    const country = await Country.find({})
+    const region = await Region.find({})
+    const newSpot = {
+      continent: continent[0].id,
+      country: country[0].id,
+      region: region[0].id,
+      name: 'cool beach',
+      latitude: '67.00',
+      longitude: '-52.00',
+      user: user
+    }
 
+    await api
+      .post('/api/surfspots')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newSpot)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
+
+    const beaches = spotsAtEnd.map(b => b.name)
+    expect(beaches).toContain(
+      'cool beach'
+    )
   })
 
-  test('the surfspots is for default public', () => {
-    //todo
+  test.only('if user has no token an appropriate error is shown', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, 'wrong')
+    const continent = await Continent.find({})
+    const country = await Country.find({})
+    const region = await Region.find({})
+    const newSpot = {
+      continent: continent[0].id,
+      country: country[0].id,
+      region: region[0].id,
+      latitude: '76.1234',
+      longitude: '32.12',
+      name: 'cool beach',
+      user: user
+    }
 
-  })
-
-  test('only verified user with token can create one', () => {
-    //todo
-
-  })
-
-  test('if user has no token an appropriate error is shown', () => {
-    //todo
+    const res = await api
+      .post('/api/surfspots')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newSpot)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+    expect(res.body.error).toContain('Token missing or invalid')
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
 
   })
 

@@ -114,7 +114,7 @@ surfRouter.post('/surfspots/', async (req, res) => {
   await region.save()
   user.createdSpots = user.createdSpots.concat(savedSpot._id)
   await user.save()
-  res.json(savedSpot)
+  res.status(201).json(savedSpot)
 })
 
 surfRouter.put('/surfspots/:id', async (req, res) => {

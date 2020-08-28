@@ -1,4 +1,4 @@
-DELETE http://localhost:3003/api/surfspots/5f4760ce31b1bc05948a205c
+POST http://localhost:3003/api/surfspots/
 content-type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdvcmdlOTFAZ21haWwuY29tIiwiaWQiOiI1ZjI2MDMzNzYyZTNkMzIyMTMzZDM1N2EiLCJpYXQiOjE1OTg0Mjk4NTF9.LU9sFAN1iqEIljAqFMsH7XLnXT_UpuR-X0yc87YTGNE
 
@@ -7,8 +7,5 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImdvcmdlO
     "country": "5f33a619a61a020af8e0cc8d",
     "region": "5f33a61ea61a020af8e0cd19",
     "name": "valid",
-    "latitude": "12.3456",
-    "longitude": "-167.0022",
-    "isSecret": true,
-    "user": "5f26033762e3d322133d357a"
+    "isSecret": true
 }

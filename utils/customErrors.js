@@ -69,7 +69,7 @@ class InvalidLatitude extends ApplicationError {
 
 class InvalidLongitude extends ApplicationError {
   constructor(message) {
-    super(message || 'Invalid value, latitudes range from -180 to 180', 400)
+    super(message || 'Invalid value, longitudes range from -180 to 180', 400)
   }
 }
 
