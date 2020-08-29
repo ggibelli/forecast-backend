@@ -53,7 +53,7 @@ usersRouter.put('/:id/starred/add', async (req, res) => {
   const decodedToken = jwt.verify(req.token, config .SECRET)
   if (!req.token || !decodedToken.id) throw new InvalidToken()
   const updatedUser = await User.findByIdAndUpdate(req.params.id, { $addToSet: { starredSpots: id } },
-    { new: true }).populate('StarredSpots', { name: 1 })
+    { new: true }).populate('starredSpots', { name: 1 })
   res.json(updatedUser)
 })
 
@@ -62,7 +62,7 @@ usersRouter.put('/:id/starred/remove', async (req, res) => {
   const decodedToken = jwt.verify(req.token, config .SECRET)
   if (!req.token || !decodedToken.id) throw new InvalidToken()
   const updatedUser = await User.findByIdAndUpdate(req.params.id, { $pull: { starredSpots: id } },
-    { new: true }).populate('StarredSpots', { name: 1 })
+    { new: true }).populate('starredSpots', { name: 1 })
   res.json(updatedUser)
 })
 
