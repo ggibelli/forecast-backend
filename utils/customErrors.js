@@ -27,7 +27,7 @@ class SurfSpotNotFoundError extends ApplicationError {
 
 class AuthenticationError extends ApplicationError {
   constructor(message) {
-    super(message || 'Combination user/password incorrect.', 400)
+    super(message || 'Combination user/password incorrect.', 401)
   }
 }
 

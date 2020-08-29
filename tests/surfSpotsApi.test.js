@@ -20,9 +20,27 @@ beforeEach(async () => {
   await Region.deleteMany({})
   await SurfSpot.deleteMany({})
   await Forecast.deleteMany({})
+  await User.deleteMany({})
+  const passwordHash = await bcrypt.hash('secret', 10)
+  const user = new User({ username: 'rootgiovanni', passwordHash, email: 'prova@ciao.it' })
+  const passwordHash2 = await bcrypt.hash('password', 10)
+  const user2 = new User({ username: 'provaprova', passwordHash: passwordHash2, email: 'prova2@ciao.it' })
+  await user.save()
+  await user2.save()
   const continent = new Continent({ name: 'Europe', latitude: '50.00', longitude: '-50.00' })
   const country = new Country({ name: 'Portugal', continent, latitude: '20.00', longitude: '30.00' })
   const region = new Region({ name: 'Algarve', country, continent, latitude: '12.00', longitude: '-45.00' })
+  const newSpot = {
+    continent: continent.id,
+    country: country.id,
+    region: region.id,
+    latitude: '76.1234',
+    longitude: '32.12',
+    name: 'cool beach',
+    user: user
+  }
+  const ownedSpot = new SurfSpot(newSpot)
+  await ownedSpot.save()
   continent.countries.push(country)
   country.regions.push(region)
   const surfObjects = helper.initialSpots.map((spot) => ({ ...spot, continent, country, region }))
@@ -32,6 +50,7 @@ beforeEach(async () => {
     region.surfSpots.push(newSpot)
     surfSpotsObjects.push(newSpot)
   })
+  region.surfSpots.push(ownedSpot)
   const promiseArray = surfSpotsObjects.map(spot => spot.save())
   await continent.save()
   await country.save()
@@ -67,7 +86,7 @@ describe('when there are surfspot saved', () => {
   test('all the surf spots are present under the region', async () => {
     const regions = await helper.regionsInDb()
     const response = await api.get(`/api/regions/${regions[0].id}`)
-    expect(response.body.surfSpots).toHaveLength(3)
+    expect(response.body.surfSpots).toHaveLength(4)
   })
 
   test('a single spot is present and has forecast ID', async () => {
@@ -142,7 +161,7 @@ describe('when there are surfspot saved', () => {
 })
 describe('when creating a surfspot', () => {
 
-  test('wheif a surfspot does not have coordinates an appropriate error is shown', async () => {
+  test('if a surfspot does not have coordinates an appropriate error is shown', async () => {
     const user = await User.findOne({ username: 'rootgiovanni' })
     await bcrypt.compare('secret', user.passwordHash)
     const userForToken = {
@@ -169,7 +188,7 @@ describe('when creating a surfspot', () => {
       .expect('Content-Type', /application\/json/)
 
     const spotsAtEnd = await helper.surfSpotsInDb()
-    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
     expect(res.body.error).toContain('Invalid value, latitudes range from -90 to 90')
 
   })
@@ -202,7 +221,7 @@ describe('when creating a surfspot', () => {
       .expect('Content-Type', /application\/json/)
 
     const spotsAtEnd = await helper.surfSpotsInDb()
-    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
     expect(res.body.error).toContain('Invalid value, latitudes range from -90 to 90')
 
   })
@@ -236,7 +255,7 @@ describe('when creating a surfspot', () => {
       .expect('Content-Type', /application\/json/)
 
     const spotsAtEnd = await helper.surfSpotsInDb()
-    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
     expect(res.body.error).toContain('Invalid value, longitudes range from -180 to 180')
   })
 
@@ -269,7 +288,7 @@ describe('when creating a surfspot', () => {
       .expect('Content-Type', /application\/json/)
 
     const spotsAtEnd = await helper.surfSpotsInDb()
-    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 2)
 
     const beach = spotsAtEnd.filter(b => b.name === 'cool beach')
     expect(beach[0].isSecret).toBe(false)
@@ -304,7 +323,7 @@ describe('when creating a surfspot', () => {
       .expect('Content-Type', /application\/json/)
 
     const spotsAtEnd = await helper.surfSpotsInDb()
-    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 2)
 
     const beaches = spotsAtEnd.map(b => b.name)
     expect(beaches).toContain(
@@ -312,7 +331,7 @@ describe('when creating a surfspot', () => {
     )
   })
 
-  test.only('if user has no token an appropriate error is shown', async () => {
+  test('if user has no token an appropriate error is shown', async () => {
     const user = await User.findOne({ username: 'rootgiovanni' })
     await bcrypt.compare('secret', user.passwordHash)
     const userForToken = {
@@ -341,28 +360,110 @@ describe('when creating a surfspot', () => {
       .expect('Content-Type', /application\/json/)
     expect(res.body.error).toContain('Token missing or invalid')
     const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
+
+  })
+
+  test('the surfspot can be modified by its own creator', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const spotToUpdate = await SurfSpot.findOne({ user })
+    const modifiedSpot = {
+      continent: spotToUpdate.continent,
+      country: spotToUpdate.country,
+      region: spotToUpdate.region,
+      latitude: spotToUpdate.latitude,
+      longitude: spotToUpdate.longitude,
+      name: spotToUpdate.name,
+      user: spotToUpdate.user,
+      isSecret: true
+    }
+    await api
+      .put(`/api/surfspots/${spotToUpdate._id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(modifiedSpot)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    const spotModified = spotsAtEnd.find(spot => spot.name === 'cool beach')
+    expect(spotModified.isSecret).toBe(true)
+  })
+
+  test('if an user tries to modify another user surfspot an error is shown', async () => {
+    const user = await User.findOne({ username: 'provaprova' })
+    await bcrypt.compare('password', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+
+    const spotToUpdate = await SurfSpot.findOne({ name: 'cool beach' })
+    const modifiedSpot = {
+      continent: spotToUpdate.continent,
+      country: spotToUpdate.country,
+      region: spotToUpdate.region,
+      latitude: spotToUpdate.latitude,
+      longitude: spotToUpdate.longitude,
+      name: spotToUpdate.name,
+      user: spotToUpdate.user,
+      isSecret: true
+    }
+
+    const res = await api
+      .put(`/api/surfspots/${spotToUpdate._id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(modifiedSpot)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    expect(res.body.error).toContain('Only surfspot creator can modify it')
+  })
+
+  test('the surfspot can be deleted by its own creator', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const spotToDelete = await SurfSpot.findOne({ user })
+    await api
+      .delete(`/api/surfspots/${spotToDelete._id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
+    const spotsAtEnd = await helper.surfSpotsInDb()
     expect(spotsAtEnd).toHaveLength(helper.initialSpots.length)
 
+    const spots = spotsAtEnd.map(s => s.name)
+    expect(spots).not.toContain(spotToDelete.name)
   })
 
-  test('the surfspot can be modified by its own creator', () => {
-    //todo
+  test('if an user tries to delete another user surfspot an error is shown', async () => {
+    const user = await User.findOne({ username: 'provaprova' })
+    await bcrypt.compare('password', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, config .SECRET)
+    const spotToDelete = await SurfSpot.findOne({ name: 'cool beach' })
+    const res = await api
+      .delete(`/api/surfspots/${spotToDelete._id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(401)
+    const spotsAtEnd = await helper.surfSpotsInDb()
+    expect(spotsAtEnd).toHaveLength(helper.initialSpots.length + 1)
 
-  })
-
-  test('if an user tries to modify another user surfspot an error is shown', () => {
-    //todo
-
-  })
-
-  test('the surfspot can be deleted by its own creator', () => {
-    //todo
-
-  })
-
-  test('if an user tries to delete another user surfspot an error is shown', () => {
-    //todo
-
+    const spots = spotsAtEnd.map(s => s.name)
+    expect(spots).toContain(spotToDelete.name)
+    expect(res.body.error).toContain('Only surfspot creator can delete it')
   })
 })
 
@@ -370,7 +471,8 @@ describe('when there is initially one user in db', () => {
   beforeEach(async () => {
     await User.deleteMany({})
     const passwordHash = await bcrypt.hash('secret', 10)
-    const user = new User({ username: 'rootgiovanni', passwordHash, email: 'prova@ciao.it' })
+    const surfspot = await SurfSpot.findOne({ name: 'Praia do Telheiro' })
+    const user = new User({ username: 'rootgiovanni', passwordHash, email: 'prova@ciao.it', starredSpots: [surfspot._id] })
     await user.save()
   })
 
@@ -501,20 +603,88 @@ describe('when there is initially one user in db', () => {
     const res = await api
       .post('/api/login')
       .send({ email: 'prova@ciao.it', password: 'wrong' })
-      .expect(400)
+      .expect(401)
     expect(res.body.error).toContain('Combination user/password incorrect.')
   })
 
-  test('a surfspot can be starred', async () => {
-    //todo
+  test('a single user has starred spots and created spots', async () => {
+    const userToCheck = await User.findOne({ username: 'rootgiovanni' })
+    const res = await api
+      .get(`/api/users/${userToCheck._id}`)
+      .expect(200)
+    expect(res.body.starredSpots).toBeDefined()
+    expect(res.body.createdSpots).toBeDefined()
   })
 
-  test('a surfspot can be unstarred', async () => {
-    //todo
+  test('a surfspot can be starred by logged user', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const surfspot = await SurfSpot.findOne({ name: 'cool beach' })
+    const token = jwt.sign(userForToken, config .SECRET)
+    const res = await api
+      .put(`/api/users/${user._id}/starred/add`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ id: surfspot._id })
+      .expect(200)
+    const starredSpots = res.body.starredSpots.map(spot => spot.name)
+    expect(starredSpots).toContain('cool beach')
+    expect(starredSpots).toContain('Praia do Telheiro')
   })
 
-  test('the info and the surfspots starred and created are shown', async () => {
-    //todo
+  test('a surfspot can be unstarred by logged in user', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const surfspot = await SurfSpot.findOne({ name: 'Praia do Telheiro' })
+    const token = jwt.sign(userForToken, config .SECRET)
+    const res = await api
+      .put(`/api/users/${user._id}/starred/remove`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ id: surfspot._id })
+      .expect(200)
+    const starredSpots = res.body.starredSpots.map(spot => spot.name)
+    expect(starredSpots).not.toContain('Praia do Telheiro')
+  })
+
+  test('a surfspot cannot be starred if user has no token', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const surfspot = await SurfSpot.findOne({ name: 'cool beach' })
+    const token = jwt.sign(userForToken, 'no token')
+    const res = await api
+      .put(`/api/users/${user._id}/starred/add`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ id: surfspot._id })
+      .expect(401)
+    expect(res.body.error).toContain('Token missing or invalid')
+  })
+
+  test('a surfspot cannot be unstarred if user has no token', async () => {
+    const user = await User.findOne({ username: 'rootgiovanni' })
+    await bcrypt.compare('secret', user.passwordHash)
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const surfspot = await SurfSpot.findOne({ name: 'Praia do Telheiro' })
+    const token = jwt.sign(userForToken, 'no token')
+    const res = await api
+      .put(`/api/users/${user._id}/starred/remove`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ id: surfspot._id })
+      .expect(401)
+    expect(res.body.error).toContain('Token missing or invalid')
   })
 })
 
