@@ -19,10 +19,9 @@ loginRouter.post('/', async (req, res) => {
   }
 
   const token = jwt.sign(userForToken, config .SECRET)
-  console.log(user)
   res
     .status(200)
-    .send({ token, firstName: user.firstName, lastName: user.lastName, email: user.email, starred: user.starredSpots, id: user.id })
+    .send({ token, firstName: user.firstName, lastName: user.lastName, email: user.email, id: user.id })
 })
 
 module.exports = loginRouter
