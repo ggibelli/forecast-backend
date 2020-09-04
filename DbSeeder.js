@@ -100,7 +100,7 @@ const createSurfSpot = async (spot) => {
 }
 
 const seedDatabaseLocations = async () => {
-  const rawData = await fs.readFile('./cleanSpotsNz.json')
+  const rawData = await fs.readFile('./cleanSpotsPt.json')
   const surfSpots = JSON.parse(rawData)
   surfSpots.map((surfspot) => createSurfSpot(surfspot))
 }

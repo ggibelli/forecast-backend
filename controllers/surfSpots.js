@@ -101,9 +101,10 @@ surfRouter.get('/surfspots/:id', async (req, res) => {
 })
 
 surfRouter.post('/surfspots/', async (req, res) => {
-  const spot = new SurfSpot(req.body)
+  let spot = new SurfSpot(req.body)
   const region = await Region.findById(req.body.region)
   region.surfSpots = region.surfSpots.concat(spot)
+  spot = await spot.populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 }).execPopulate()
   const decodedToken = jwt.verify(req.token, config .SECRET)
   if (!req.token || !decodedToken.id) throw new InvalidToken()
   if (!latitudeIsValid(req.body.latitude)) throw new InvalidLatitude()
@@ -111,9 +112,11 @@ surfRouter.post('/surfspots/', async (req, res) => {
   const user = await User.findById(decodedToken.id)
   spot.user = user
   const savedSpot = await spot.save()
+  
   await region.save()
   user.createdSpots = user.createdSpots.concat(savedSpot._id)
   await user.save()
+  console.log(savedSpot)
   res.status(201).json(savedSpot)
 })
 
