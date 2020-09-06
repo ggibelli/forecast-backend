@@ -38,13 +38,21 @@ usersRouter.post('/', async (req, res) => {
 usersRouter.get('/:id', async (req, res) => {
   const user = await User
     .findById(req.params.id).populate({
-      path: 'StarredSpots',
+      path: 'createdSpots',
+      select: ['name', 'isSecret', 'latitude', 'longitude', 'region', 'continent'],
+      populate: {
+        path: 'country',
+        select: 'name' }
+    }).
+    populate({
+      path: 'starredSpots',
       select: 'name',
       populate: {
-        path: 'CreatedSpots',
+        path: 'country',
         select: 'name',
-      },
-    })
+      }
+    },
+    )
   res.json(user)
 })
 

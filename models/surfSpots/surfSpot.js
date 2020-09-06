@@ -48,6 +48,10 @@ const spotSchema = new mongoose.Schema({
 
 spotSchema.index({ 'latitude': 1, 'longitude': 1 }, { 'unique': true })
 
+spotSchema.pre('remove', async function() {
+  console.log(this)
+})
+
 spotSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()

@@ -112,7 +112,6 @@ surfRouter.post('/surfspots/', async (req, res) => {
   const user = await User.findById(decodedToken.id)
   spot.user = user
   const savedSpot = await spot.save()
-  
   await region.save()
   user.createdSpots = user.createdSpots.concat(savedSpot._id)
   await user.save()
@@ -129,6 +128,7 @@ surfRouter.put('/surfspots/:id', async (req, res) => {
   const user = await User.findById(decodedToken.id)
   if (spot.user !== user.id.toString()) throw new AuthenticationError('Only surfspot creator can modify it')
   const updatedSpot = await SurfSpot.findByIdAndUpdate(req.params.id, spot, { new: true })
+  await updatedSpot.populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 }).execPopulate()
   res.json(updatedSpot)
 })
 
