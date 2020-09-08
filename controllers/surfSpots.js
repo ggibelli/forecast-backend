@@ -132,7 +132,7 @@ surfRouter.put('/surfspots/:id', async (req, res) => {
   res.json(updatedSpot)
 })
 
-surfRouter.delete('/surfspots/:id', async (req, res) => {
+surfRouter.delete('/surfspots/delete/:id', async (req, res) => {
   const spot = await SurfSpot.findById(req.params.id)
   const decodedToken = jwt.verify(req.token, config .SECRET)
   if (!req.token || !decodedToken.id) throw new InvalidToken()
@@ -140,6 +140,23 @@ surfRouter.delete('/surfspots/:id', async (req, res) => {
   if (spot.user.toString() !== user.id.toString()) throw new AuthenticationError('Only surfspot creator can delete it')
   await spot.remove()
   user.createdSpots = user.createdSpots.filter(spot => spot.id.toString() !== req.params.id.toString())
+  await user.save()
+  res.status(204).end()
+})
+
+// not good :(
+surfRouter.delete('/surfspots/delete', async (req, res) => {
+  const decodedToken = jwt.verify(req.token, config .SECRET)
+  if (!req.token || !decodedToken.id) throw new InvalidToken()
+  const user = await User.findById(decodedToken.id)
+  const spotsToRemove = req.body.ids
+  console.log('cristo')
+  if (!spotsToRemove.every(spot => user.createdSpots.includes(spot))) throw new AuthenticationError('Only surfspot creator can delete it')
+  await SurfSpot.deleteMany({ _id: {
+    $in: [spotsToRemove]
+  }
+  })
+  user.createdSpots = user.createdSpots.filter(spot => !spotsToRemove.includes(spot.id.toString()))
   await user.save()
   res.status(204).end()
 })
