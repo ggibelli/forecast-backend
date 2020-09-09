@@ -41,7 +41,7 @@ usersRouter.get('/:id', async (req, res) => {
       path: 'createdSpots',
       select: ['name', 'isSecret', 'latitude', 'longitude', 'region', 'continent'],
       populate: {
-        path: 'country',
+        path: 'country continent region',
         select: 'name' }
     }).
     populate({
