@@ -40,7 +40,7 @@ const errorHandler = (error, req, res, next) => {
   } else if (error.name === 'InvalidPasswordError') {
     return res.status(error.status).send({ error: error.message })
   } else if (error.name === 'VersionError') {
-    return res.status(error.status).send({ error: error.message })
+    return res.status(error.status || 400).send({ error: error.message })
   } else if (error.name === 'InvalidApiRequest') {
     return res.status(error.status).send({ error: error.message })
   } else if (error.name === 'InvalidLatitude') {
