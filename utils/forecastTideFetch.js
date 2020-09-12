@@ -19,7 +19,7 @@ const createForecast = async (spot) => {
   const forecast = new Forecast({ surfspot: spot })
   await forecast.save()
   spot.forecast = await Forecast.findOne({ surfspot: spot })
-  spot.tile_url = `https://api.maptiler.com/maps/062c0d04-1842-4a45-8181-c5bec3bf2214/static/${spot.longitude},${spot.latitude},12/260x260.png?key=3tFgnOQBQixe61aigsBT&attribution=0`
+  spot.tile_url = `https://api.maptiler.com/maps/062c0d04-1842-4a45-8181-c5bec3bf2214/static/${spot.longitude},${spot.latitude},12/320x320.png?key=3tFgnOQBQixe61aigsBT&attribution=0`
   await spot.save()
 }
 

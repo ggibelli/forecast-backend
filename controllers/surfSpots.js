@@ -94,7 +94,7 @@ surfRouter.get('/regions/:id', async (req, res) => {
 
 surfRouter.get('/surfspots/:id', async (req, res) => {
   const spot = await SurfSpot
-    .findOne({ _id: req.params.id, isSecret: false }).populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 }).populate('forecast', { id: 1 })
+    .findOne({ _id: req.params.id }).populate('continent', { name: 1 }).populate('country', { name: 1 }).populate('region', { name: 1 }).populate('forecast', { id: 1 })
   if (!spot) throw new SurfSpotNotFoundError()
   spot.latitude !== 'unknown' && !spot.forecast && await forecastHelper.createForecast(spot)
   res.json(spot)
