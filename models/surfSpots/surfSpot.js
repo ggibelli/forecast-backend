@@ -1,7 +1,7 @@
-const mongoose = require('mongoose')
-const mongooseUniqueValidator = require('mongoose-unique-validator')
+const mongoose = require('mongoose');
+const mongooseUniqueValidator = require('mongoose-unique-validator');
 
-mongoose.set('useCreateIndex', true)
+mongoose.set('useCreateIndex', true);
 
 const spotSchema = new mongoose.Schema({
   continent: {
@@ -40,27 +40,23 @@ const spotSchema = new mongoose.Schema({
   longitude: { type: String, required: true },
   tile_url: String,
   isSecret: { type: Boolean, default: false },
-  user : {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-})
+});
 
-spotSchema.index({ 'latitude': 1, 'longitude': 1 }, { 'unique': true })
-
-spotSchema.pre('remove', async function() {
-  console.log(this)
-})
+spotSchema.index({ latitude: 1, longitude: 1 }, { unique: true });
 
 spotSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
   },
-})
+});
 
-spotSchema.plugin(mongooseUniqueValidator)
-const SurfSpot = mongoose.model('SurfSpot', spotSchema)
+spotSchema.plugin(mongooseUniqueValidator);
+const SurfSpot = mongoose.model('SurfSpot', spotSchema);
 
-module.exports = SurfSpot
+module.exports = SurfSpot;

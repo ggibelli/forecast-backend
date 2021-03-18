@@ -1,13 +1,13 @@
-const Continent = require('../models/surfSpots/continent')
-const Country = require('../models/surfSpots/country')
-const Region = require('../models/surfSpots/region')
-const SurfSpot = require('../models/surfSpots/surfSpot')
-const User = require('../models/user')
+const Continent = require('../models/surfSpots/continent');
+const Country = require('../models/surfSpots/country');
+const Region = require('../models/surfSpots/region');
+const SurfSpot = require('../models/surfSpots/surfSpot');
+const User = require('../models/user');
 
 const initialUser = {
   username: 'testuser',
-  password: 'testpassword'
-}
+  password: 'testpassword',
+};
 
 const initialSpots = [
   {
@@ -15,7 +15,8 @@ const initialSpots = [
     direction: 'Right and left',
     bottom: 'Reef (coral, sharp rocks etc..)',
     good_swell_direction: 'NorthWest, West, SouthWest',
-    good_wind_direction: 'NorthWest, West, SouthWest, SouthEast, East, NorthEast',
+    good_wind_direction:
+      'NorthWest, West, SouthWest, SouthEast, East, NorthEast',
     best_tide_position: 'unkwnown',
     best_tide_movement: 'unkwnown',
     dangers: 'rocks',
@@ -32,8 +33,8 @@ const initialSpots = [
     bottom: 'Sandy with rock',
     good_swell_direction: 'unkwnown',
     good_wind_direction: 'unkwnown',
-    best_tide_position: 'Don\'t know',
-    best_tide_movement: 'Don\'t know',
+    best_tide_position: "Don't know",
+    best_tide_movement: "Don't know",
     dangers: 'rocks',
     latitude: '37.0457',
     longitude: '-8.9793',
@@ -75,40 +76,44 @@ const initialSpots = [
     name: 'Secret Beach',
     isSecret: true,
   },
-]
+];
 
 const continentsInDb = async () => {
-  const continents = await Continent.find({})
-  return continents.map(continent => continent.toJSON())
-}
+  const continents = await Continent.find({});
+  return continents.map((continent) => continent.toJSON());
+};
 
 const nonExistingId = async () => {
-  const continent = new Continent({ name: 'ti cancello', latitude: '10.00', longitude: '11.00' })
-  await continent.save()
-  await continent.remove()
+  const continent = new Continent({
+    name: 'ti cancello',
+    latitude: '10.00',
+    longitude: '11.00',
+  });
+  await continent.save();
+  await continent.remove();
 
-  return continent._id.toString()
-}
+  return continent._id.toString();
+};
 
 const countriesInDb = async () => {
-  const countries = await Country.find({})
-  return countries.map(country => country.toJSON())
-}
+  const countries = await Country.find({}).exec();
+  return countries.map((country) => country.toJSON());
+};
 
 const regionsInDb = async () => {
-  const regions = await Region.find({})
-  return regions.map(region => region.toJSON())
-}
+  const regions = await Region.find({}).exec();
+  return regions.map((region) => region.toJSON());
+};
 
 const surfSpotsInDb = async () => {
-  const spots = await SurfSpot.find({})
-  return spots.map(spot => spot.toJSON())
-}
+  const spots = await SurfSpot.find({}).exec();
+  return spots.map((spot) => spot.toJSON());
+};
 
 const usersInDb = async () => {
-  const users = await User.find({})
-  return users.map(u => u.toJSON())
-}
+  const users = await User.find({}).exec();
+  return users.map((u) => u.toJSON());
+};
 
 module.exports = {
   initialSpots,
@@ -118,5 +123,5 @@ module.exports = {
   countriesInDb,
   regionsInDb,
   surfSpotsInDb,
-  usersInDb
-}
+  usersInDb,
+};
