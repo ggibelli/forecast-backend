@@ -1,14 +1,12 @@
 # Surf forecast app server
 
-App that allows users to select a surf spot from the world map or search for it,
-and add a public or secret surf spot to the DB. I scraped existing surf websites for the surf spots info
-and I used a 3rd party API for the forecast data that is processed in NodeJS, and then I used ChartJS to visualize it. 
+The app allows users to select a surf spot from the world map or look for it in the database, and add a public or secret surf spot to the DB. I scraped existing surf websites for the surf spots info, such best wind direction, best swell direction, dangers.. For the actual forecast I used a 3rd party API (https://stormglass.io), but first the data is processed on my server and served through a REST API, and then I used ChartJS to visualize it.
 
 ## Technology used
 
-This app is written in NodeJs and Express, and I decided to use mongoDB as a database.
-I used [StormglassAPI](https://stormglass.io) as a weather API then I simply get the data from the different sources, 
-I calculate the average and I serve it through my API.
+This app is written in NodeJs and Express, and I decided to use mongoDB as a database using Mongoose as an ODM. For the user authorization I used JWT token.
+I used [StormglassAPI](https://stormglass.io) as a weather API, I get the data for 5 days and from several weather institutes around the world, and I make the average on the most important parameters for surfing, such as swell period, swell heights... and then I serve it through my API.
+The app is tested using jest and supertest.
 
 ## Features
 
@@ -16,13 +14,13 @@ I calculate the average and I serve it through my API.
 - Users can add surfspot, deciding if is public or secret
 - Users can remove single or multiple surfspot
 - Users can modify their own surfspots
-- Users save a surfspot
+- Users can save a surfspot
 
 ## Installation
 
 In the project directory, you can run:
 
-### `npm dev`
+### `npm run dev`
 
 Runs the server in the development mode.<br />
 
